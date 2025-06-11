@@ -441,25 +441,35 @@ def process_prompt_and_add_tasks(state, model_choice):
         if image_end == None:
             image_end = [None] * len(prompts)
 
+        tasks_added = 0
         for single_prompt, start, end in zip(prompts, image_start, image_end) :
+            if args.queue_size > 0 and len(gen.get("queue", [])) >= args.queue_size:
+                gr.Info(f"Queue limit of {args.queue_size} reached. Remaining prompts skipped.")
+                break
             extra_inputs = {
                 "prompt" : single_prompt,
                 "image_start": start,
                 "image_end" : end,
                 "video_source": None,
             }
-            inputs.update(extra_inputs) 
+            inputs.update(extra_inputs)
             add_video_task(**inputs)
+            tasks_added += 1
     else:
+        tasks_added = 0
         for single_prompt in prompts :
+            if args.queue_size > 0 and len(gen.get("queue", [])) >= args.queue_size:
+                gr.Info(f"Queue limit of {args.queue_size} reached. Remaining prompts skipped.")
+                break
             extra_inputs = {
                 "prompt" : single_prompt,
             }
-            inputs.update(extra_inputs) 
+            inputs.update(extra_inputs)
             add_video_task(**inputs)
+            tasks_added += 1
 
     gen = get_gen_info(state)
-    gen["prompts_max"] = len(prompts) + gen.get("prompts_max",0)
+    gen["prompts_max"] = tasks_added + gen.get("prompts_max",0)
     state["validate_success"] = 1
     queue= gen.get("queue", [])
     return update_queue_data(queue)
@@ -487,6 +497,9 @@ def add_video_task(**inputs):
     state = inputs["state"]
     gen = get_gen_info(state)
     queue = gen["queue"]
+    if args.queue_size > 0 and len(queue) >= args.queue_size:
+        gr.Warning(f"Queue limit of {args.queue_size} reached. Task not added.")
+        return update_queue_data(queue)
     task_id += 1
     current_task_id = task_id
 
@@ -1283,6 +1296,12 @@ def _parse_args():
         default=-1,
         help="default generation seed"
     )
+    parser.add_argument(
+        "--queue-size",
+        type=int,
+        default=0,
+        help="Maximum number of tasks in queue (0 for unlimited)",
+    )
 
     parser.add_argument(
         "--advanced",
@@ -1308,6 +1327,12 @@ def _parse_args():
         default=0,
         help="Server port"
     )
+    parser.add_argument(
+        "--port",
+        type=str,
+        default=None,
+        help="Alias for --server-port",
+    )
 
     parser.add_argument(
         "--theme",
@@ -1330,6 +1355,12 @@ def _parse_args():
         type=str,
         default="",
         help="Server name"
+    )
+    parser.add_argument(
+        "--host",
+        type=str,
+        default=None,
+        help="Alias for --server-name",
     )
     parser.add_argument(
         "--gpu",
@@ -1462,6 +1493,10 @@ def get_lora_dir(model_filename):
 attention_modes_installed = get_attention_modes()
 attention_modes_supported = get_supported_attention_modes()
 args = _parse_args()
+if args.port is not None:
+    args.server_port = args.port
+if args.host is not None:
+    args.server_name = args.host
 
 major, minor = torch.cuda.get_device_capability(args.gpu if len(args.gpu) > 0 else None)
 if  major < 8:
