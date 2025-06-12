@@ -54,7 +54,7 @@ def contains_nsfw(frames: torch.Tensor) -> bool:
         for entry in result:
             label = entry["label"].lower()
             score = entry["score"]
-            if label in {"porn", "sexy", "hentai"} and score > 0.4:
+            if label in {"nsfw", "porn", "sexy", "hentai"} and score > 0.4:
                 return True
 
     return False
