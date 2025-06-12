@@ -2,6 +2,8 @@
 
 This document covers all available command line options for WanGP.
 
+The `--negative-prompt` option now defaults to a string that filters common NSFW terms like `nude`, `porn`, and `explicit` content.
+
 ## Basic Usage
 
 ```bash

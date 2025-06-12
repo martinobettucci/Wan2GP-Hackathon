@@ -22,6 +22,10 @@ except ImportError:
 
 DATA_DIR = "ckpts"
 
+DEFAULT_NEGATIVE_PROMPT = (
+    "nsfw, nude, nudity, naked, sexy, sex, porn, explicit, erotic"
+)
+
 # --------------------------------------------------
 # HELPER FUNCTIONS
 # --------------------------------------------------
@@ -391,7 +395,12 @@ def parse_args():
 
     # Generation Options
     parser.add_argument("--prompt", type=str, default=None, required=True, help="Prompt for generation")
-    parser.add_argument("--negative-prompt", type=str, default="", help="Negative prompt")
+    parser.add_argument(
+        "--negative-prompt",
+        type=str,
+        default=DEFAULT_NEGATIVE_PROMPT,
+        help="Negative prompt",
+    )
     parser.add_argument("--resolution", type=str, default="832x480", help="WxH")
     parser.add_argument("--frames", type=int, default=64, help="Number of frames (16=1s if fps=16). Must be multiple of 4 +/- 1 in WAN.")
     parser.add_argument("--steps", type=int, default=30, help="Number of denoising steps.")
@@ -517,7 +526,7 @@ def main():
     )
 
     # Negative prompt
-    negative_prompt = args.negative_prompt or ""
+    negative_prompt = args.negative_prompt or DEFAULT_NEGATIVE_PROMPT
 
     # Sanity check resolution
     if "*" in args.resolution.lower():

@@ -45,6 +45,9 @@ PROMPT_VARS_MAX = 10
 
 target_mmgp_version = "3.4.8"
 WanGP_version = "5.5"
+DEFAULT_NEGATIVE_PROMPT = (
+    "nsfw, nude, nudity, naked, sexy, sex, porn, explicit, erotic"
+)
 prompt_enhancer_image_caption_model, prompt_enhancer_image_caption_processor, prompt_enhancer_llm_model, prompt_enhancer_llm_tokenizer = None, None, None, None
 
 from importlib.metadata import version
@@ -1760,7 +1763,7 @@ def get_default_settings(filename):
             "embedded_guidance_scale" : 6.0,
             "audio_guidance_scale": 5.0,
             "flow_shift": get_default_flow(filename, i2v),
-            "negative_prompt": "",
+            "negative_prompt": DEFAULT_NEGATIVE_PROMPT,
             "activated_loras": [],
             "loras_multipliers": "",
             "tea_cache_setting": 2.5,
@@ -4967,7 +4970,10 @@ def generate_video_tab(update_form = False, state_dict = None, ui_defaults = Non
                             embedded_guidance_scale = gr.Slider(1.0, 20.0, value=6.0, step=0.5, label="Embedded Guidance Scale", visible=(hunyuan_t2v or hunyuan_i2v))
                             flow_shift = gr.Slider(0.0, 25.0, value=ui_defaults.get("flow_shift",3), step=0.1, label="Shift Scale") 
                         with gr.Row():
-                            negative_prompt = gr.Textbox(label="Negative Prompt", value=ui_defaults.get("negative_prompt", "") )
+                            negative_prompt = gr.Textbox(
+                                label="Negative Prompt",
+                                value=ui_defaults.get("negative_prompt", DEFAULT_NEGATIVE_PROMPT),
+                            )
                 with gr.Tab("Loras"):
                     with gr.Column(visible = True): #as loras_column:
                         gr.Markdown("<B>Loras can be used to create special effects on the video by mentioning a trigger word in the Prompt. You can save Loras combinations in presets.</B>")
