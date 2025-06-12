@@ -2337,9 +2337,9 @@ def apply_changes(  state,
                     preload_in_VRAM_choice = 0
 ):
     if args.lock_config:
-        return
+        return "<DIV ALIGN=CENTER>Configuration is locked</DIV>", gr.update(), gr.update(), gr.update()
     if gen_in_progress:
-        return "<DIV ALIGN=CENTER>Unable to change config when a generation is in progress</DIV>", gr.update(), gr.update()
+        return "<DIV ALIGN=CENTER>Unable to change config when a generation is in progress</DIV>", gr.update(), gr.update(), gr.update()
     global offloadobj, wan_model, server_config, loras, loras_names, default_loras_choices, default_loras_multis_str, default_lora_preset_prompt, default_lora_preset, loras_presets
     server_config = {"attention_mode" : attention_choice,  
                      "transformer_types": transformer_types_choices, 
