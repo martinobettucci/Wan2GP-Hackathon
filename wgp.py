@@ -3431,6 +3431,11 @@ def generate_video(
                     file_name = f"{time_flag}_seed{seed}_{sanitize_file_name(save_prompt[:100]).strip()}.mp4"
                 video_path = os.path.join(save_path, file_name)
 
+                from wan.utils import contains_nsfw
+                if contains_nsfw(sample):
+                    send_cmd("info", "content was flagged inappropriate and removed")
+                    sample = torch.zeros_like(sample)
+
                 if audio_guide == None:
                     cache_video( tensor=sample[None], save_file=video_path, fps=output_fps, nrow=1, normalize=True, value_range=(-1, 1))
                 else:
