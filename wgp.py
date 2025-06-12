@@ -4191,6 +4191,7 @@ def switch_advanced(state, new_advanced, lset_name):
 
 def switch_simple(state, new_simple):
     state["simple"] = new_simple
+    state["advanced"] = not new_simple
     return str(time.time())
 
 
