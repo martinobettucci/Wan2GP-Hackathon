@@ -4193,7 +4193,7 @@ def prepare_inputs_dict(target, inputs ):
         inputs.pop(k)
 
     model_filename = state["model_filename"]
-    inputs["type"] = f"WanGP v{WanGP_version} by DeepBeepMeep - " +  get_model_name(model_filename)
+    inputs["type"] = "Hackathon Video Generator - " + get_model_name(model_filename)
 
     if target == "settings":
         return inputs
@@ -6073,8 +6073,8 @@ def create_ui():
     else:
         theme = gr.themes.Soft(font=["Verdana"], primary_hue="sky", neutral_hue="slate", text_size="md")
 
-    with gr.Blocks(css=css, theme=theme, title= "WanGP") as main:
-        gr.Markdown(f"<div align=center><H1>Wan<SUP>GP</SUP> v{WanGP_version} <FONT SIZE=4>by <I>DeepBeepMeep</I></FONT> <FONT SIZE=3>") # (<A HREF='https://github.com/deepbeepmeep/Wan2GP'>Updates</A>)</FONT SIZE=3></H1></div>")
+    with gr.Blocks(css=css, theme=theme, title="Hackathon Video Generator") as main:
+        gr.Markdown("<div align=center><H1>Hackathon Video Generator</H1></div>")
         global model_list
 
         tab_state = gr.State({ "tab_no":0 }) 
