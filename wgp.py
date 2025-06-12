@@ -1755,7 +1755,8 @@ def get_default_settings(filename):
             "negative_prompt": "",
             "activated_loras": [],
             "loras_multipliers": "",
-            "tea_cache": 0.0,
+            "tea_cache_setting": 2.5,
+            "tea_cache": 2.5,
             "tea_cache_start_step_perc": 0,
             "RIFLEx_setting": 0,
             "slg_switch": 0,
@@ -1834,6 +1835,8 @@ def get_default_settings(filename):
         ui_defaults.setdefault("resolution", "512x512")
         ui_defaults.setdefault("temporal_upsampling", "rife4")
         ui_defaults.setdefault("spatial_upsampling", "lanczos2")
+        ui_defaults.setdefault("tea_cache_setting", 2.5)
+        ui_defaults.setdefault("tea_cache", ui_defaults["tea_cache_setting"])
 
     default_seed = args.seed
     if default_seed > -1:
