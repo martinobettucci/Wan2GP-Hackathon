@@ -4,6 +4,7 @@
 ### June 11 2025: WanGP v5.5
 👋 *Hunyuan Video Custom Audio*: it is similar to Hunyuan Video Avatar excpet there isn't any lower limit on the number of frames and you can use your reference images in a different context than the image itself\
 *Hunyuan Video Custom Edit*: Hunyuan Video Controlnet, use it to do inpainting and replace a person in a video while still keeping his poses. Similar to Vace but less restricted than the Wan models in terms of content...
+* Added a default negative prompt to reduce NSFW results by filtering terms like `nude` and `porn`.
 
 ### June 6 2025: WanGP v5.41
 👋 Bonus release: Support for **AccVideo** Lora to speed up x2 Video generations in Wan models. Check the Loras documentation to get the usage instructions of AccVideo.

@@ -153,6 +153,7 @@ A cat sitting on a windowsill watching rain, cozy atmosphere, soft lighting
 - Mention lighting and atmosphere
 - Describe the setting in detail
 - Use quality modifiers (high quality, detailed, etc.)
+- A default negative prompt is applied to filter NSFW terms like `nude`, `porn`, and `explicit`.
 
 ## Next Steps
 

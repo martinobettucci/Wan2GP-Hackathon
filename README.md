@@ -23,6 +23,7 @@ WanGP supports the Wan (and derived models), Hunyuan Video and LTV Video models 
 ### June 11 2025: WanGP v5.5
 👋 *Hunyuan Video Custom Audio*: it is similar to Hunyuan Video Avatar except there isn't any lower limit on the number of frames and you can use your reference images in a different context than the image itself\
 *Hunyuan Video Custom Edit*: Hunyuan Video Controlnet, use it to do inpainting and replace a person in a video while still keeping his poses. Similar to Vace but less restricted than the Wan models in terms of content...
+* Default negative prompt is now automatically applied to reduce NSFW content.
 
 
 ### June 6 2025: WanGP v5.41
