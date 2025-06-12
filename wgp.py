@@ -4667,7 +4667,7 @@ def generate_video_tab(update_form = False, state_dict = None, ui_defaults = Non
                 with gr.Row(elem_id="image-modal-close-button-row"):
                      close_modal_button = gr.Button("❌", size="sm")
                 modal_image_display = gr.Image(label="Full Resolution Image", interactive=False, show_label=False)
-            with gr.Row(visible= not simple_ui): #len(loras)>0) as presets_column:
+            with gr.Row(visible= not simple_ui) as presets_column:  # len(loras)>0
                 lset_choices = [ (preset, preset) for preset in loras_presets ] + [(get_new_preset_msg(advanced_ui), "")]
                 with gr.Column(scale=6):
                     lset_name = gr.Dropdown(show_label=False, allow_custom_value= True, scale=5, filterable=True, choices= lset_choices, value=launch_preset)
