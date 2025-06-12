@@ -4210,6 +4210,7 @@ def switch_simple(state, new_simple):
         gr.Row(visible=not new_simple),
         gr.Row(visible=not new_simple),
         gr.Row(visible=not new_simple),
+        gr.Row(visible=not new_simple),
         gr.Accordion(visible=not new_simple),
     )
 
@@ -4923,7 +4924,7 @@ def generate_video_tab(update_form = False, state_dict = None, ui_defaults = Non
                     value=ui_defaults.get("resolution","512x512"),
                     label= label
                 )
-            with gr.Row(visible= not simple_ui):
+            with gr.Row(visible= not simple_ui) as video_length_row:
                 if recammaster:
                     video_length = gr.Slider(5, 193, value=ui_defaults.get("video_length", 81), step=4, label="Number of frames (16 = 1s), locked", interactive= False)
                 elif diffusion_forcing:
@@ -5164,7 +5165,7 @@ def generate_video_tab(update_form = False, state_dict = None, ui_defaults = Non
 
         extra_inputs = prompt_vars + [wizard_prompt, wizard_variables_var, wizard_prompt_activated_var, video_prompt_column, image_prompt_column,
                                       prompt_column_advanced, prompt_column_wizard_vars, prompt_column_wizard, lset_name, advanced_row, speed_tab, quality_tab,
-                                      sliding_window_tab, misc_tab, prompt_enhancer_row, inference_steps_row, skip_layer_guidance_row,
+                                      sliding_window_tab, misc_tab, prompt_enhancer_row, inference_steps_row, video_length_row, skip_layer_guidance_row,
                                       video_prompt_type_video_guide, video_prompt_type_image_refs,
                                       show_advanced, presets_column, settings_buttons_row, settings_file_row]
         if update_form:
@@ -5187,6 +5188,7 @@ def generate_video_tab(update_form = False, state_dict = None, ui_defaults = Non
                     refresh_form_trigger,
                     show_advanced,
                     presets_column,
+                    video_length_row,
                     settings_buttons_row,
                     settings_file_row,
                     queue_accordion,
