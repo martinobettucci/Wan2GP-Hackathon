@@ -4,7 +4,7 @@ guidance_scale: 3
 stg_scale: 1
 rescaling_scale: 0.7
 skip_block_list: [19]
-num_inference_steps: 40
+num_inference_steps: 20
 stg_mode: "attention_values" # options: "attention_values", "attention_skip", "residual", "transformer_block"
 decode_timestep: 0.05
 decode_noise_scale: 0.025

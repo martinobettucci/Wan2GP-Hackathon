@@ -1744,7 +1744,7 @@ def get_default_settings(filename):
             # use the lowest available resolution by default
             "resolution": "512x512",
             "video_length": 81,
-            "num_inference_steps": 30,
+            "num_inference_steps": 20,
             "seed": -1,
             "repeat_generation": 1,
             "multi_images_gen_type": 0,
@@ -4913,7 +4913,7 @@ def generate_video_tab(update_form = False, state_dict = None, ui_defaults = Non
                 else:
                     video_length = gr.Slider(5, 193, value=ui_defaults.get("video_length", 81), step=4, label="Number of frames (16 = 1s)", interactive= True)
             with gr.Row(visible = not ltxv_distilled) as inference_steps_row:                                       
-                num_inference_steps = gr.Slider(1, 100, value=ui_defaults.get("num_inference_steps",30), step=1, label="Number of Inference Steps")
+                num_inference_steps = gr.Slider(1, 100, value=ui_defaults.get("num_inference_steps",20), step=1, label="Number of Inference Steps")
 
 
 
