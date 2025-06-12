@@ -13,7 +13,7 @@ def load_nsfw_pipeline() -> object:
         _nsfw_pipeline = pipeline(
             "image-classification",
             model="Falconsai/nsfw_image_detection",
-            use_fast=False,
+            use_fast=True,
             device=0 if torch.cuda.is_available() else -1,
         )
     return _nsfw_pipeline
