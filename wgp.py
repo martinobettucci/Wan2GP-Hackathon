@@ -5400,9 +5400,17 @@ def generate_video_tab(update_form = False, state_dict = None, ui_defaults = Non
                 outputs=[modal_container]
             )
 
-    return ( state, loras_choices, lset_name, state,
-             video_guide, video_mask, image_refs, video_prompt_video_guide_trigger, prompt_enhancer    
-        ) 
+    return (
+        state,
+        loras_choices,
+        lset_name,
+        state,
+        video_guide,
+        video_mask,
+        image_refs,
+        video_prompt_video_guide_trigger,
+        prompt_enhancer_row,
+    )
  
 
 def generate_download_tab(lset_name,loras_choices, state):
