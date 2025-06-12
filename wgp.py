@@ -1759,10 +1759,11 @@ def get_default_settings(filename):
             "tea_cache": 2.5,
             "tea_cache_start_step_perc": 0,
             "RIFLEx_setting": 0,
-            "slg_switch": 0,
+            "slg_switch": 1,
             "slg_layers": [9],
             "slg_start_perc": 10,
             "slg_end_perc": 90,
+            "cfg_star_switch": 1,
             # best upsampling options by default
             "temporal_upsampling": "rife4",
             "spatial_upsampling": "lanczos2",
@@ -1837,6 +1838,8 @@ def get_default_settings(filename):
         ui_defaults.setdefault("spatial_upsampling", "lanczos2")
         ui_defaults.setdefault("tea_cache_setting", 2.5)
         ui_defaults.setdefault("tea_cache", ui_defaults["tea_cache_setting"])
+        ui_defaults.setdefault("slg_switch", 1)
+        ui_defaults.setdefault("cfg_star_switch", 1)
 
     default_seed = args.seed
     if default_seed > -1:
