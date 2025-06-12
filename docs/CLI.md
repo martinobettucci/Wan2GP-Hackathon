@@ -75,10 +75,13 @@ python wgp.py --vace-1-3B     # VACE ControlNet 1.3B model
 ### Server Configuration
 ```bash
 --server-port PORT           # Gradio server port (default: 7860)
+--port PORT                  # Alias for --server-port
 --server-name NAME           # Gradio server name (default: localhost)
+--host HOST                  # Alias for --server-name
 --listen                     # Make server accessible on network
 --share                      # Create shareable HuggingFace URL for remote access
 --open-browser               # Open browser automatically when launching
+--queue-size NUMBER          # Maximum tasks allowed in queue (0 for unlimited)
 ```
 
 ### Interface Options
