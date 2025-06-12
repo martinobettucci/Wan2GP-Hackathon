@@ -4206,7 +4206,7 @@ def switch_simple(state, new_simple):
     state["advanced"] = not new_simple
     return (
         str(time.time()),
-        gr.Checkbox.update(value=not new_simple, visible=not new_simple),
+        gr.update(value=not new_simple, visible=not new_simple),
         gr.Row(visible=not new_simple),
         gr.Row(visible=not new_simple),
         gr.Row(visible=not new_simple),
