@@ -85,6 +85,7 @@ python wgp.py --vace-1-3B     # VACE ControlNet 1.3B model
 ```bash
 --lock-config                # Prevent modifying video engine configuration from interface
 --theme THEME_NAME           # UI theme: "default" or "gradio"
+--admin                     # Enable admin tabs
 ```
 
 ## File and Directory Options
