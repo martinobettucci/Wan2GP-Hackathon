@@ -677,7 +677,7 @@ def display(tabs, model_choice, vace_video_input, vace_video_mask, vace_image_re
                                 export_to_current_video_engine_btn = gr.Button("Export to current Video Input and Video Mask", visible= False)
                     
                 export_to_vace_video_14B_btn.click( fn=teleport_to_vace_14B, inputs=[], outputs=[tabs, model_choice]).then(
-                    fn=export_to_current_video_engine, inputs= [foreground_video_output, alpha_video_output], outputs= [video_prompt_video_guide_trigger, vace_video_input, vace_video_mask])
+                    fn=export_to_current_video_engine, inputs= [model_choice, foreground_video_output, alpha_video_output], outputs= [video_prompt_video_guide_trigger, vace_video_input, vace_video_mask])
                 
                 export_to_current_video_engine_btn.click(  fn=export_to_current_video_engine, inputs= [model_choice, foreground_video_output, alpha_video_output], outputs= [vace_video_input, vace_video_mask]).then( #video_prompt_video_guide_trigger, 
                     fn=teleport_to_video_tab, inputs= [], outputs= [tabs])
