@@ -1,6 +1,7 @@
 import time
 import torch
 import cv2
+import os
 from PIL import Image, ImageDraw, ImageOps
 import numpy as np
 from typing import Union
@@ -32,7 +33,19 @@ class BaseSegmenter:
         # self.model.to(torch.float16)
         # offload.save_model(self.model, "ckpts/mask/sam_vit_h_4b8939_fp16.safetensors")
         
-        offload.load_model_data(self.model, "ckpts/mask/sam_vit_h_4b8939_fp16.safetensors")
+        ckpt_path = "ckpts/mask/sam_vit_h_4b8939_fp16.safetensors"
+        if not os.path.exists(ckpt_path):
+            from pathlib import Path
+            from huggingface_hub import hf_hub_download
+
+            Path("ckpts/mask").mkdir(parents=True, exist_ok=True)
+            hf_hub_download(
+                repo_id="DeepBeepMeep/Wan2.1",
+                filename="sam_vit_h_4b8939_fp16.safetensors",
+                local_dir="ckpts",
+                subfolder="mask",
+            )
+        offload.load_model_data(self.model, ckpt_path)
         self.model.to(torch.float32) # need to be optimized, if not f32 crappy precision
         self.model.to(device=self.device)
         self.predictor = SamPredictor(self.model)
