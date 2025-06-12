@@ -19,15 +19,42 @@ def load_nsfw_pipeline() -> object:
 
 
 def contains_nsfw(frames: torch.Tensor) -> bool:
-    """Return True if any frame is flagged NSFW."""
+    """
+    Retourne True si au moins une frame est détectée NSFW
+    Accepte (N_frames, C, H, W) ou (C, N_frames, H, W)
+    """
     classifier = load_nsfw_pipeline()
-    for idx in range(frames.shape[1]):
-        frame = frames[:, idx]
-        frame = ((frame + 1) / 2).clamp(0, 1)
-        img = Image.fromarray((frame.permute(1, 2, 0).cpu().numpy() * 255).astype("uint8"))
-        result = classifier(img, top_k=1)[0]
-        label = result.get("label")
-        score = result.get("score", 0)
-        if label in {"porn", "sexy", "hentai"} and score > 0.5:
-            return True
+    
+    # Auto-détecte le format
+    if frames.shape[0] in [1, 3]:  # (C, N, H, W)
+        N = frames.shape[1]
+        get_frame = lambda idx: frames[:, idx]
+    elif frames.shape[1] in [1, 3]:  # (N, C, H, W)
+        N = frames.shape[0]
+        get_frame = lambda idx: frames[idx]
+    else:
+        raise ValueError("Format de tensor inattendu")
+    
+    for idx in range(N):
+        frame = get_frame(idx).detach().cpu()
+        # Normalisation
+        if frame.min() < 0:
+            frame = ((frame + 1) / 2).clamp(0, 1)
+        else:
+            frame = frame.clamp(0, 1)
+        img = Image.fromarray((frame.permute(1, 2, 0).numpy() * 255).astype("uint8"))
+
+        # DEBUG : Sauvegarde et inspection
+        # img.save(f"debug_frame_{idx}.png")
+        result = classifier(img, top_k=5)
+        print(f"Frame {idx}: {result}")  # Voir les scores
+
+        # Accepte le "top1" OU tout label "NSFW" > 0.4 (exemple seuil bas)
+        for entry in result:
+            label = entry["label"].lower()
+            score = entry["score"]
+            if label in {"porn", "sexy", "hentai"} and score > 0.4:
+                return True
+
     return False
+
