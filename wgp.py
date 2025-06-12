@@ -1484,6 +1484,7 @@ verbose_level = int(args.verbose)
 quantizeTransformer = args.quantize_transformer
 check_loras = args.check_loras ==1
 advanced = args.advanced
+simple_mode = True
 
 server_config_filename = "wgp_config.json"
 if not os.path.isdir("settings"):
@@ -4188,6 +4189,10 @@ def switch_advanced(state, new_advanced, lset_name):
     else:
         return  gr.Row(visible=new_advanced), gr.Row(visible=True), gr.Button(visible=True), gr.Row(visible= False), gr.Dropdown(choices=lset_choices, value= lset_name)
 
+def switch_simple(state, new_simple):
+    state["simple"] = new_simple
+    return str(time.time())
+
 
 def prepare_inputs_dict(target, inputs ):
     
@@ -4582,14 +4587,17 @@ def generate_video_tab(update_form = False, state_dict = None, ui_defaults = Non
 
     if update_form:
         model_filename = state_dict["model_filename"]
-        advanced_ui = state_dict["advanced"]  
+        advanced_ui = state_dict["advanced"]
+        simple_ui = state_dict.get("simple", simple_mode)
     else:
         model_filename = transformer_filename
         advanced_ui = advanced
+        simple_ui = simple_mode
         ui_defaults=  get_default_settings(model_filename)
         state_dict = {}
         state_dict["model_filename"] = model_filename
         state_dict["advanced"] = advanced_ui
+        state_dict["simple"] = simple_ui
         gen = dict()
         gen["queue"] = []
         state_dict["gen"] = gen
@@ -4639,7 +4647,7 @@ def generate_video_tab(update_form = False, state_dict = None, ui_defaults = Non
                 with gr.Row(elem_id="image-modal-close-button-row"):
                      close_modal_button = gr.Button("❌", size="sm")
                 modal_image_display = gr.Image(label="Full Resolution Image", interactive=False, show_label=False)
-            with gr.Row(visible= True): #len(loras)>0) as presets_column:
+            with gr.Row(visible= not simple_ui): #len(loras)>0) as presets_column:
                 lset_choices = [ (preset, preset) for preset in loras_presets ] + [(get_new_preset_msg(advanced_ui), "")]
                 with gr.Column(scale=6):
                     lset_name = gr.Dropdown(show_label=False, allow_custom_value= True, scale=5, filterable=True, choices= lset_choices, value=launch_preset)
@@ -4817,7 +4825,7 @@ def generate_video_tab(update_form = False, state_dict = None, ui_defaults = Non
 
 
                 video_mask = gr.Video(label= "Video Mask (for Inpainting or Outpaing, white pixels = Mask)", visible= "M" in video_prompt_type_value, value= ui_defaults.get("video_mask", None)) 
-            audio_guide = gr.Audio(value= ui_defaults.get("audio_guide", None), type="filepath", label="Voice to follow", show_download_button= True, visible= fantasy or hunyuan_video_avatar or hunyuan_video_custom_audio   )
+            audio_guide = gr.Audio(value= ui_defaults.get("audio_guide", None), type="filepath", label="Voice to follow", show_download_button= True, visible= (fantasy or hunyuan_video_avatar or hunyuan_video_custom_audio) and not simple_ui   )
 
             advanced_prompt = advanced_ui
             prompt_vars=[]
@@ -4848,7 +4856,7 @@ def generate_video_tab(update_form = False, state_dict = None, ui_defaults = Non
                 wizard_prompt = gr.Textbox(visible = not advanced_prompt, label="Prompts (" + new_line_text + ", # lines = comments)", value=default_wizard_prompt, lines=3)
                 wizard_prompt_activated_var = gr.Text(wizard_prompt_activated, visible= False)
                 wizard_variables_var = gr.Text(wizard_variables, visible = False)
-            with gr.Row(visible= server_config.get("enhancer_enabled", 0) == 1  ) as prompt_enhancer_row:
+            with gr.Row(visible= server_config.get("enhancer_enabled", 0) == 1 and not simple_ui ) as prompt_enhancer_row:
                 prompt_enhancer = gr.Dropdown(
                     choices=[
                         ("Disabled", ""),
@@ -4860,7 +4868,7 @@ def generate_video_tab(update_form = False, state_dict = None, ui_defaults = Non
                     label="Enhance Prompt using a LLM", scale = 3,
                     visible= True
                 )
-            with gr.Row():
+            with gr.Row(visible= not simple_ui):
                 if test_class_i2v(model_filename):
                     if server_config.get("fit_canvas", 0) == 1:
                         label = "Max Resolution (as it maybe less depending on video width / height ratio)"
@@ -4895,7 +4903,7 @@ def generate_video_tab(update_form = False, state_dict = None, ui_defaults = Non
                     value=ui_defaults.get("resolution","512x512"),
                     label= label
                 )
-            with gr.Row():
+            with gr.Row(visible= not simple_ui):
                 if recammaster:
                     video_length = gr.Slider(5, 193, value=ui_defaults.get("video_length", 81), step=4, label="Number of frames (16 = 1s), locked", interactive= False)
                 elif diffusion_forcing:
@@ -4912,13 +4920,14 @@ def generate_video_tab(update_form = False, state_dict = None, ui_defaults = Non
                     video_length = gr.Slider(5, 337, value=ui_defaults.get("video_length", 97), step=4, label="Number of frames (24 = 1s)", interactive= True)
                 else:
                     video_length = gr.Slider(5, 193, value=ui_defaults.get("video_length", 81), step=4, label="Number of frames (16 = 1s)", interactive= True)
-            with gr.Row(visible = not ltxv_distilled) as inference_steps_row:                                       
+            with gr.Row(visible = not ltxv_distilled and not simple_ui) as inference_steps_row:
                 num_inference_steps = gr.Slider(1, 100, value=ui_defaults.get("num_inference_steps",20), step=1, label="Number of Inference Steps")
 
 
 
-            show_advanced = gr.Checkbox(label="Advanced Mode", value=advanced_ui)
-            with gr.Tabs(visible=advanced_ui) as advanced_row:
+            show_simple = gr.Checkbox(label="Simple Mode", value=simple_ui)
+            show_advanced = gr.Checkbox(label="Advanced Mode", value=advanced_ui, visible= not simple_ui)
+            with gr.Tabs(visible=advanced_ui and not simple_ui) as advanced_row:
                 # with gr.Row(visible=advanced_ui) as advanced_row:
                 with gr.Tab("Generation"):
                     with gr.Column():
@@ -5077,11 +5086,11 @@ def generate_video_tab(update_form = False, state_dict = None, ui_defaults = Non
                         label="RIFLEx positional embedding to generate long video"
                     )
 
-            with gr.Row():
+            with gr.Row(visible= not simple_ui):
                 save_settings_btn = gr.Button("Set Settings as Default", visible = not args.lock_config)
                 export_settings_from_file_btn = gr.Button("Export Settings to File", visible = not args.lock_config)
                 use_video_settings_btn = gr.Button("Use Selected Video Settings", visible = not args.lock_config)
-            with gr.Row():
+            with gr.Row(visible= not simple_ui):
                 settings_file = gr.File(height=41,label="Load Settings From Video / Json")
                 settings_base64_output = gr.Text(interactive= False, visible=False, value = "")
         if not update_form:
@@ -5104,7 +5113,7 @@ def generate_video_tab(update_form = False, state_dict = None, ui_defaults = Non
                         onemoresample_btn = gr.Button("One More Sample Please !")
                         onemorewindow_btn = gr.Button("Extend this Sample Please !", visible = False)
                         abort_btn = gr.Button("Abort")
-                with gr.Accordion("Queue Management", open=False) as queue_accordion:
+                with gr.Accordion("Queue Management", open=False, visible= not simple_ui) as queue_accordion:
                     with gr.Row( ): 
                         queue_df = gr.DataFrame(
                             headers=["Qty","Prompt", "Length","Steps","", "", "", "", ""],
@@ -5149,6 +5158,8 @@ def generate_video_tab(update_form = False, state_dict = None, ui_defaults = Non
             video_prompt_video_guide_trigger.change(fn=refresh_video_prompt_video_guide_trigger, inputs=[video_prompt_type, video_prompt_video_guide_trigger], outputs=[video_prompt_type, video_prompt_type_video_guide, video_guide, video_mask, keep_frames_video_guide])
             video_prompt_type_image_refs.input(fn=refresh_video_prompt_type_image_refs, inputs = [video_prompt_type, video_prompt_type_image_refs], outputs = [video_prompt_type, image_refs, remove_background_images_ref ])
             video_prompt_type_video_guide.input(fn=refresh_video_prompt_type_video_guide, inputs = [video_prompt_type, video_prompt_type_video_guide], outputs = [video_prompt_type, video_guide, keep_frames_video_guide, video_mask])
+
+            show_simple.change(fn=switch_simple, inputs=[state, show_simple], outputs=[refresh_form_trigger])
 
             show_advanced.change(fn=switch_advanced, inputs=[state, show_advanced, lset_name], outputs=[advanced_row, preset_buttons_rows, refresh_lora_btn, refresh2_row ,lset_name ]).then(
                 fn=switch_prompt_type, inputs = [state, wizard_prompt_activated_var, wizard_variables_var, prompt, wizard_prompt, *prompt_vars], outputs = [wizard_prompt_activated_var, wizard_variables_var, prompt, wizard_prompt, prompt_column_advanced, prompt_column_wizard, prompt_column_wizard_vars, *prompt_vars])
