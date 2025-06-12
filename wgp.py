@@ -4204,7 +4204,14 @@ def switch_advanced(state, new_advanced, lset_name):
 def switch_simple(state, new_simple):
     state["simple"] = new_simple
     state["advanced"] = not new_simple
-    return str(time.time())
+    return (
+        str(time.time()),
+        gr.Checkbox.update(value=not new_simple, visible=not new_simple),
+        gr.Row(visible=not new_simple),
+        gr.Row(visible=not new_simple),
+        gr.Row(visible=not new_simple),
+        gr.Accordion(visible=not new_simple),
+    )
 
 
 def prepare_inputs_dict(target, inputs ):
@@ -5099,11 +5106,11 @@ def generate_video_tab(update_form = False, state_dict = None, ui_defaults = Non
                         label="RIFLEx positional embedding to generate long video"
                     )
 
-            with gr.Row(visible= not simple_ui):
+            with gr.Row(visible= not simple_ui) as settings_buttons_row:
                 save_settings_btn = gr.Button("Set Settings as Default", visible = not args.lock_config)
                 export_settings_from_file_btn = gr.Button("Export Settings to File", visible = not args.lock_config)
                 use_video_settings_btn = gr.Button("Use Selected Video Settings", visible = not args.lock_config)
-            with gr.Row(visible= not simple_ui):
+            with gr.Row(visible= not simple_ui) as settings_file_row:
                 settings_file = gr.File(height=41,label="Load Settings From Video / Json")
                 settings_base64_output = gr.Text(interactive= False, visible=False, value = "")
         if not update_form:
@@ -5158,7 +5165,8 @@ def generate_video_tab(update_form = False, state_dict = None, ui_defaults = Non
         extra_inputs = prompt_vars + [wizard_prompt, wizard_variables_var, wizard_prompt_activated_var, video_prompt_column, image_prompt_column,
                                       prompt_column_advanced, prompt_column_wizard_vars, prompt_column_wizard, lset_name, advanced_row, speed_tab, quality_tab,
                                       sliding_window_tab, misc_tab, prompt_enhancer_row, inference_steps_row, skip_layer_guidance_row,
-                                      video_prompt_type_video_guide, video_prompt_type_image_refs] # show_advanced presets_column,
+                                      video_prompt_type_video_guide, video_prompt_type_image_refs,
+                                      show_advanced, presets_column, settings_buttons_row, settings_file_row]
         if update_form:
             locals_dict = locals()
             gen_inputs = [state_dict if k=="state" else locals_dict[k]  for k in inputs_names] + [state_dict] + extra_inputs
@@ -5172,7 +5180,18 @@ def generate_video_tab(update_form = False, state_dict = None, ui_defaults = Non
             video_prompt_type_image_refs.input(fn=refresh_video_prompt_type_image_refs, inputs = [video_prompt_type, video_prompt_type_image_refs], outputs = [video_prompt_type, image_refs, remove_background_images_ref ])
             video_prompt_type_video_guide.input(fn=refresh_video_prompt_type_video_guide, inputs = [video_prompt_type, video_prompt_type_video_guide], outputs = [video_prompt_type, video_guide, keep_frames_video_guide, video_mask])
 
-            show_simple.change(fn=switch_simple, inputs=[state, show_simple], outputs=[refresh_form_trigger])
+            show_simple.change(
+                fn=switch_simple,
+                inputs=[state, show_simple],
+                outputs=[
+                    refresh_form_trigger,
+                    show_advanced,
+                    presets_column,
+                    settings_buttons_row,
+                    settings_file_row,
+                    queue_accordion,
+                ]
+            )
 
             show_advanced.change(fn=switch_advanced, inputs=[state, show_advanced, lset_name], outputs=[advanced_row, preset_buttons_rows, refresh_lora_btn, refresh2_row ,lset_name ]).then(
                 fn=switch_prompt_type, inputs = [state, wizard_prompt_activated_var, wizard_variables_var, prompt, wizard_prompt, *prompt_vars], outputs = [wizard_prompt_activated_var, wizard_variables_var, prompt, wizard_prompt, prompt_column_advanced, prompt_column_wizard, prompt_column_wizard_vars, *prompt_vars])
