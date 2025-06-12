@@ -1741,12 +1741,13 @@ def get_default_settings(filename):
     if not Path(defaults_filename).is_file():
         ui_defaults = {
             "prompt": get_default_prompt(i2v),
-            "resolution": "1280x720" if "720p" in filename else "832x480",
+            # use the lowest available resolution by default
+            "resolution": "512x512",
             "video_length": 81,
             "num_inference_steps": 30,
             "seed": -1,
             "repeat_generation": 1,
-            "multi_images_gen_type": 0,        
+            "multi_images_gen_type": 0,
             "guidance_scale": 5.0,
             "embedded_guidance_scale" : 6.0,
             "audio_guidance_scale": 5.0,
@@ -1760,7 +1761,10 @@ def get_default_settings(filename):
             "slg_switch": 0,
             "slg_layers": [9],
             "slg_start_perc": 10,
-            "slg_end_perc": 90
+            "slg_end_perc": 90,
+            # best upsampling options by default
+            "temporal_upsampling": "rife4",
+            "spatial_upsampling": "lanczos2",
         }
 
         if get_model_type(filename) in ("hunyuan","hunyuan_i2v"):
@@ -1773,7 +1777,6 @@ def get_default_settings(filename):
                 "guidance_scale": 6.0,
                 "flow_shift": 8,
                 "sliding_window_discard_last_frames" : 0,
-                "resolution": "1280x720" if "720p" in filename else "960x544",
                 "sliding_window_size" : 121 if "720p" in filename else 97,
                 "RIFLEx_setting": 2,
                 "guidance_scale": 6,
@@ -1793,7 +1796,6 @@ def get_default_settings(filename):
             ui_defaults.update({
                 "guidance_scale": 7.5,
                 "flow_shift": 13,
-                "resolution": "1280x720",
             })
         elif get_model_type(filename) in ("hunyuan_custom_edit"):
             ui_defaults.update({
@@ -1827,6 +1829,11 @@ def get_default_settings(filename):
         image_prompt_type = ui_defaults.get("image_prompt_type", None)
         if image_prompt_type !=None and not isinstance(image_prompt_type, str):
             ui_defaults["image_prompt_type"] = "S" if image_prompt_type  == 0 else "SE"
+
+        # ensure new defaults exist when loading old settings
+        ui_defaults.setdefault("resolution", "512x512")
+        ui_defaults.setdefault("temporal_upsampling", "rife4")
+        ui_defaults.setdefault("spatial_upsampling", "lanczos2")
 
     default_seed = args.seed
     if default_seed > -1:
@@ -4879,8 +4886,8 @@ def generate_video_tab(update_form = False, state_dict = None, ui_defaults = Non
                         ("720x720 (1:1, 480p)", "720x720"),
                         ("512x512 (1:1, 480p)", "512x512"),
                     ],
-                    value=ui_defaults.get("resolution","832x480"),
-                    label= label 
+                    value=ui_defaults.get("resolution","512x512"),
+                    label= label
                 )
             with gr.Row():
                 if recammaster:
