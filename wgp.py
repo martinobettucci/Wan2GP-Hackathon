@@ -5794,25 +5794,21 @@ def generate_dropdown_model_list(model_filename):
 
 
 def select_tab(tab_state, evt:gr.SelectData):
-    if args.admin:
-        tab_video_mask_creator = 2
+    tab_video_mask_creator = 2 if args.admin else 1
 
-        old_tab_no = tab_state.get("tab_no",0)
-        new_tab_no = evt.index
-        if old_tab_no == tab_video_mask_creator:
-            vmc_event_handler(False)
-        elif new_tab_no == tab_video_mask_creator:
-            if gen_in_progress:
-                gr.Info("Unable to access this Tab while a Generation is in Progress. Please come back later")
-                tab_state["tab_no"] = 0
-                return gr.Tabs(selected="video_gen")
-            else:
-                vmc_event_handler(True)
-        tab_state["tab_no"] = new_tab_no
-        return gr.Tabs()
-    else:
-        tab_state["tab_no"] = evt.index
-        return gr.Tabs()
+    old_tab_no = tab_state.get("tab_no",0)
+    new_tab_no = evt.index
+    if old_tab_no == tab_video_mask_creator:
+        vmc_event_handler(False)
+    elif new_tab_no == tab_video_mask_creator:
+        if gen_in_progress:
+            gr.Info("Unable to access this Tab while a Generation is in Progress. Please come back later")
+            tab_state["tab_no"] = 0
+            return gr.Tabs(selected="video_gen")
+        else:
+            vmc_event_handler(True)
+    tab_state["tab_no"] = new_tab_no
+    return gr.Tabs()
 
 def get_js():
     start_quit_timer_js = """
@@ -6184,21 +6180,21 @@ def create_ui():
             if args.admin:
                 with gr.Tab("Guides", id="info"):
                     generate_info_tab()
-                with gr.Tab("Video Mask Creator", id="video_mask_creator") as video_mask_creator:
-                    from preprocessing.matanyone  import app as matanyone_app
-                    vmc_event_handler = matanyone_app.get_vmc_event_handler()
+            with gr.Tab("Video Mask Creator", id="video_mask_creator") as video_mask_creator:
+                from preprocessing.matanyone  import app as matanyone_app
+                vmc_event_handler = matanyone_app.get_vmc_event_handler()
 
-                    matanyone_app.display(main_tabs, model_choice, video_guide, video_mask, image_refs, video_prompt_type_video_trigger)
-                if not args.lock_config:
-                    with gr.Tab("Downloads", id="downloads") as downloads_tab:
-                        generate_download_tab(lset_name, loras_choices, state)
-                    with gr.Tab("Configuration", id="configuration"):
-                        generate_configuration_tab(state, main, header, model_choice, prompt_enhancer_row)
+                matanyone_app.display(main_tabs, model_choice, video_guide, video_mask, image_refs, video_prompt_type_video_trigger)
+            if args.admin and not args.lock_config:
+                with gr.Tab("Downloads", id="downloads") as downloads_tab:
+                    generate_download_tab(lset_name, loras_choices, state)
+                with gr.Tab("Configuration", id="configuration"):
+                    generate_configuration_tab(state, main, header, model_choice, prompt_enhancer_row)
+            if args.admin:
                 with gr.Tab("About"):
                     generate_about_tab()
 
-        if args.admin:
-            main_tabs.select(fn=select_tab, inputs= [tab_state], outputs= main_tabs)
+        main_tabs.select(fn=select_tab, inputs= [tab_state], outputs= main_tabs)
         return main
 
 if __name__ == "__main__":
