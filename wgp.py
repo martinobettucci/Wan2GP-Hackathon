@@ -1500,7 +1500,9 @@ verbose_level = int(args.verbose)
 quantizeTransformer = args.quantize_transformer
 check_loras = args.check_loras ==1
 advanced = args.advanced
-simple_mode = True
+# when launching in advanced mode, disable simple mode so all controls
+# (like the resolution selector) become visible
+simple_mode = not advanced
 
 server_config_filename = "wgp_config.json"
 if not os.path.isdir("settings"):
@@ -4220,6 +4222,7 @@ def switch_simple(state, new_simple):
         gr.Row(visible=not new_simple),
         gr.Row(visible=not new_simple),
         gr.Row(visible=not new_simple),
+        gr.Row(visible=not new_simple),
         gr.Accordion(visible=not new_simple),
     )
 
@@ -4898,7 +4901,7 @@ def generate_video_tab(update_form = False, state_dict = None, ui_defaults = Non
                     label="Enhance Prompt using a LLM", scale = 3,
                     visible= True
                 )
-            with gr.Row(visible= not simple_ui):
+            with gr.Row(visible= not simple_ui) as resolution_row:
                 if test_class_i2v(model_filename):
                     if server_config.get("fit_canvas", 0) == 1:
                         label = "Max Resolution (as it maybe less depending on video width / height ratio)"
@@ -5177,7 +5180,7 @@ def generate_video_tab(update_form = False, state_dict = None, ui_defaults = Non
 
         extra_inputs = prompt_vars + [wizard_prompt, wizard_variables_var, wizard_prompt_activated_var, video_prompt_column, image_prompt_column,
                                       prompt_column_advanced, prompt_column_wizard_vars, prompt_column_wizard, lset_name, advanced_row, speed_tab, quality_tab,
-                                      sliding_window_tab, misc_tab, prompt_enhancer_row, inference_steps_row, video_length_row, skip_layer_guidance_row,
+                                      sliding_window_tab, misc_tab, prompt_enhancer_row, resolution_row, inference_steps_row, video_length_row, skip_layer_guidance_row,
                                       video_prompt_type_video_guide, video_prompt_type_image_refs,
                                       show_advanced, presets_column, settings_buttons_row, settings_file_row]
         if update_form:
@@ -5200,6 +5203,7 @@ def generate_video_tab(update_form = False, state_dict = None, ui_defaults = Non
                     refresh_form_trigger,
                     show_advanced,
                     presets_column,
+                    resolution_row,
                     video_length_row,
                     settings_buttons_row,
                     settings_file_row,
