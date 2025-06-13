@@ -80,6 +80,7 @@ python wgp.py --vace-1-3B     # VACE ControlNet 1.3B model
 --server-name NAME           # Gradio server name (default: localhost)
 --listen                     # Make server accessible on network
 --share                      # Create shareable HuggingFace URL for remote access
+--root_path PATH            # Root path prefix for hosting under a subpath
 --open-browser               # Open browser automatically when launching
 ```
 
@@ -124,6 +125,9 @@ python wgp.py --share --theme gradio --open-browser
 
 # Locked configuration for public use
 python wgp.py --lock-config --share
+
+# Run under a specific context path
+python wgp.py --server-port 8080 --root_path /music
 ```
 
 ### Advanced Performance Examples

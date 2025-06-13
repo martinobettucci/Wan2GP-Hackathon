@@ -1336,6 +1336,12 @@ def _parse_args():
         help="Server name"
     )
     parser.add_argument(
+        "--root_path",
+        type=str,
+        default="",
+        help="Root path for running the app under a subpath"
+    )
+    parser.add_argument(
         "--gpu",
         type=str,
         default="",
@@ -6214,4 +6220,10 @@ if __name__ == "__main__":
         else:
             url = "http://" + server_name 
         webbrowser.open(url + ":" + str(server_port), new = 0, autoraise = True)
-    demo.launch(server_name=server_name, server_port=server_port, share=args.share, allowed_paths=[save_path])
+    demo.launch(
+        server_name=server_name,
+        server_port=server_port,
+        share=args.share,
+        allowed_paths=[save_path],
+        root_path=args.root_path if len(args.root_path) > 0 else None,
+    )
