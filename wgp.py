@@ -5801,12 +5801,7 @@ def select_tab(tab_state, evt:gr.SelectData):
     if old_tab_no == tab_video_mask_creator:
         vmc_event_handler(False)
     elif new_tab_no == tab_video_mask_creator:
-        if gen_in_progress:
-            gr.Info("Unable to access this Tab while a Generation is in Progress. Please come back later")
-            tab_state["tab_no"] = 0
-            return gr.Tabs(selected="video_gen")
-        else:
-            vmc_event_handler(True)
+        vmc_event_handler(True)
     tab_state["tab_no"] = new_tab_no
     return gr.Tabs()
 
