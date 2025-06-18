@@ -1077,7 +1077,7 @@ def save_server_config():
         print(f"Error saving server configuration: {e}")
 
 def load_server_config():
-    """Load server configuration from disk or create defaults."""
+    """Load server configuration from disk or create defaults and return UI updates."""
     global server_config, transformer_types, transformer_filename
     global transformer_quantization, transformer_dtype_policy
     global text_encoder_quantization, attention_mode, profile, compile
@@ -1110,6 +1110,10 @@ def load_server_config():
                 server_config = json.load(reader)
 
         transformer_types = server_config.get("transformer_types", [])
+        if isinstance(transformer_types, str):
+            transformer_types = [transformer_types]
+            server_config["transformer_types"] = transformer_types
+            save_server_config()
         transformer_type = (
             transformer_types[0] if len(transformer_types) > 0 else model_types[0]
         )
@@ -1192,6 +1196,28 @@ def load_server_config():
         print(f"Server configuration loaded from {server_config_filename}")
     except Exception as e:
         print(f"Error loading server configuration: {e}")
+
+    config_model_list = []
+    for model_type in model_types:
+        choice = get_model_filename(model_type, transformer_quantization, transformer_dtype_policy)
+        config_model_list.append(choice)
+    config_choices = [(get_model_name(c), get_model_type(c)) for c in config_model_list]
+    config_update = gr.Dropdown.update(choices=config_choices, value=transformer_types)
+
+    dropdown_types = transformer_types if len(transformer_types) > 0 else model_types
+    current_model_type = get_model_type(transformer_filename)
+    if current_model_type not in dropdown_types:
+        dropdown_types.append(current_model_type)
+    model_list = []
+    for model_type in dropdown_types:
+        choice = get_model_filename(model_type, transformer_quantization, transformer_dtype_policy)
+        model_list.append(choice)
+    model_choices = [(get_model_name(c), get_model_type(c)) for c in model_list]
+    model_update = gr.Dropdown.update(choices=model_choices, value=current_model_type)
+    header_update = gr.Markdown.update(value=generate_header(transformer_filename, compile, attention_mode))
+    enhancer_row_update = gr.Row.update(visible=server_config.get("enhancer_enabled", 0) == 1)
+
+    return config_update, model_update, header_update, enhancer_row_update
 
 def finalize_generation_with_state(current_state):
      if not isinstance(current_state, dict) or 'gen' not in current_state:
@@ -2489,8 +2515,14 @@ def apply_changes(  state,
     if gen_in_progress:
         return "<DIV ALIGN=CENTER>Unable to change config when a generation is in progress</DIV>", gr.update(), gr.update(), gr.update()
     global offloadobj, wan_model, server_config, loras, loras_names, default_loras_choices, default_loras_multis_str, default_lora_preset_prompt, default_lora_preset, loras_presets
-    server_config = {"attention_mode" : attention_choice,  
-                     "transformer_types": transformer_types_choices, 
+
+    if isinstance(transformer_types_choices, str):
+        transformer_types_choices = [transformer_types_choices]
+    elif transformer_types_choices is None:
+        transformer_types_choices = []
+
+    server_config = {"attention_mode" : attention_choice,
+                     "transformer_types": transformer_types_choices,
                      "text_encoder_quantization" : text_encoder_quantization_choice,
                      "save_path" : save_path_choice,
                      "compile" : compile_choice,
@@ -2510,6 +2542,7 @@ def apply_changes(  state,
                      "preload_in_VRAM" : preload_in_VRAM_choice
                        }
 
+    old_server_config = {}
     if Path(server_config_filename).is_file():
         with open(server_config_filename, "r", encoding="utf-8") as reader:
             text = reader.read()
@@ -2521,8 +2554,7 @@ def apply_changes(  state,
         if lock_ui_compile:
             server_config["compile"] = old_server_config["compile"]
 
-    with open(server_config_filename, "w", encoding="utf-8") as writer:
-        writer.write(json.dumps(server_config))
+    save_server_config()
 
     changes = []
     for k, v in server_config.items():
@@ -5847,6 +5879,8 @@ def generate_configuration_tab(state, blocks, header, model_choice, prompt_enhan
                 outputs= [msg , header, model_choice, prompt_enhancer_row]
         )
 
+    return transformer_types_choices
+
 def generate_about_tab():
     gr.Markdown("<H2>WanGP - Wan 2.1 model for the GPU Poor by <B>DeepBeepMeep</B> (<A HREF='https://github.com/deepbeepmeep/Wan2GP'>GitHub</A>)</H2>")
     gr.Markdown("Original Wan 2.1 Model by <B>Alibaba</B> (<A HREF='https://github.com/Wan-Video/Wan2.1'>GitHub</A>)")
@@ -6300,13 +6334,16 @@ def create_ui():
                 with gr.Tab("Downloads", id="downloads") as downloads_tab:
                     generate_download_tab(lset_name, loras_choices, state)
                 with gr.Tab("Configuration", id="configuration"):
-                    generate_configuration_tab(state, main, header, model_choice, prompt_enhancer_row)
+                    transformer_types_dropdown = generate_configuration_tab(state, main, header, model_choice, prompt_enhancer_row)
             if args.admin:
                 with gr.Tab("About"):
                     generate_about_tab()
 
         main_tabs.select(fn=select_tab, inputs= [tab_state], outputs= main_tabs)
-        main.load(fn=load_server_config)
+        main.load(
+            fn=load_server_config,
+            outputs=[transformer_types_dropdown, model_choice, header, prompt_enhancer_row]
+        )
         return main
 
 if __name__ == "__main__":
