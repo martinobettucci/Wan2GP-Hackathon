@@ -1693,7 +1693,7 @@ for src,tgt in zip(src_move,tgt_move):
             pass
     
 
-load_server_config()
+
 
 #   Deprecated models
 for path in  ["wan2.1_Vace_1.3B_preview_bf16.safetensors", "sky_reels2_diffusion_forcing_1.3B_bf16.safetensors","sky_reels2_diffusion_forcing_720p_14B_bf16.safetensors",
@@ -2013,69 +2013,7 @@ def get_default_settings(filename):
         ui_defaults["num_inference_steps"] = default_number_steps
     return ui_defaults
 
-transformer_types = server_config.get("transformer_types", [])
-transformer_type = transformer_types[0] if len(transformer_types) > 0 else  model_types[0]
 
-transformer_quantization =server_config.get("transformer_quantization", "int8")
-
-transformer_dtype_policy = server_config.get("transformer_dtype_policy", "")
-if args.fp16:
-    transformer_dtype_policy = "fp16" 
-if args.bf16:
-    transformer_dtype_policy = "bf16" 
-transformer_filename = get_model_filename(transformer_type, transformer_quantization, transformer_dtype_policy)
-text_encoder_quantization =server_config.get("text_encoder_quantization", "int8")
-attention_mode = server_config["attention_mode"]
-if len(args.attention)> 0:
-    if args.attention in ["auto", "sdpa", "sage", "sage2", "flash", "xformers"]:
-        attention_mode = args.attention
-        lock_ui_attention = True
-    else:
-        raise Exception(f"Unknown attention mode '{args.attention}'")
-
-profile =  force_profile_no if force_profile_no >=0 else server_config["profile"]
-compile = server_config.get("compile", "")
-boost = server_config.get("boost", 1)
-vae_config = server_config.get("vae_config", 0)
-if len(args.vae_config) > 0:
-    vae_config = int(args.vae_config)
-
-reload_needed = False
-default_ui = server_config.get("default_ui", "t2v") 
-save_path = server_config.get("save_path", os.path.join(os.getcwd(), "gradio_outputs"))
-preload_model_policy = server_config.get("preload_model_policy", []) 
-
-
-if args.t2v_14B or args.t2v: 
-    transformer_filename = get_model_filename("t2v", transformer_quantization, transformer_dtype_policy)
-
-if args.i2v_14B or args.i2v: 
-    transformer_filename = get_model_filename("i2v", transformer_quantization, transformer_dtype_policy)
-
-if args.t2v_1_3B:
-    transformer_filename = get_model_filename("t2v_1.3B", transformer_quantization, transformer_dtype_policy)
-
-if args.i2v_1_3B:
-    transformer_filename = get_model_filename("fun_inp_1.3B", transformer_quantization, transformer_dtype_policy)
-
-if args.vace_1_3B: 
-    transformer_filename = get_model_filename("vace_1.3B", transformer_quantization, transformer_dtype_policy)
-
-only_allow_edit_in_advanced = False
-lora_preselected_preset = args.lora_preset
-lora_preset_model = transformer_filename
-
-if  args.compile: #args.fastest or
-    compile="transformer"
-    lock_ui_compile = True
-
-model_filename = ""
-#attention_mode="sage"
-#attention_mode="sage2"
-#attention_mode="flash"
-#attention_mode="sdpa"
-#attention_mode="xformers"
-# compile = "transformer"
 
 def get_loras_preprocessor(transformer, model_filename):
     preprocessor =  getattr(transformer, "preprocess_loras", None)
@@ -6350,6 +6288,7 @@ if __name__ == "__main__":
     atexit.register(autosave_queue)
     atexit.register(save_server_config)
     download_ffmpeg()
+    load_server_config()
     # threading.Thread(target=runner, daemon=True).start()
     os.environ["GRADIO_ANALYTICS_ENABLED"] = "False"
     server_port = int(args.server_port)
